@@ -10,6 +10,47 @@ Freqtrade is a free and open source crypto trading bot written in Python. It is 
 
 ![freqtrade](https://raw.githubusercontent.com/freqtrade/freqtrade/develop/docs/assets/freqtrade-screenshot.png)
 
+## 项目介绍
+
+本仓库是基于 [Freqtrade](https://github.com/freqtrade/freqtrade) 的个人二次开发与部署项目，用于在本地进行策略和功能开发，经 GitHub 版本管理后部署到阿里云服务器运行。项目采用“本地开发机 → GitHub → 阿里云服务器”的三角协作架构：本地负责修改和验证代码，GitHub 作为代码同步与版本记录中心，阿里云负责拉取最新代码并运行交易服务。
+
+```text
+┌────────────────────┐       push        ┌────────────────────┐
+│ 本地开发机          │ ───────────────▶ │ GitHub 仓库         │
+│ 修改 / 测试 / 提交  │                  │ 版本管理 / 中转     │
+└────────────────────┘                  └─────────┬──────────┘
+                                                  │ pull / deploy
+                                                  ▼
+                                      ┌────────────────────────┐
+                                      │ 阿里云服务器            │
+                                      │ 拉取代码 / 配置运行     │
+                                      │ Freqtrade 交易服务     │
+                                      └───────────┬────────────┘
+                                                  │
+                                                  ▼
+                                      ┌────────────────────────┐
+                                      │ 交易所 API / WebUI      │
+                                      └────────────────────────┘
+```
+
+### 工作方式
+
+1. 在本地开发机修改策略、配置模板或项目代码，并优先使用 Dry-Run、回测和测试验证。
+2. 将确认可用的改动提交到本地 Git，再推送到 GitHub；GitHub 是代码版本和部署来源的中心。
+3. 阿里云服务器通过 Git 从 GitHub 拉取指定分支的最新版本，更新依赖或 Docker 服务后运行 Freqtrade。
+4. 服务器上的运行配置、数据库、日志和密钥与代码分离管理；密钥、API Token 和真实交易配置不得提交到 GitHub。
+5. 服务器原则上不直接修改业务代码。如需变更，应回到本地开发机完成修改、验证、提交和推送，再由服务器拉取部署。
+
+### 节点职责
+
+| 节点 | 主要职责 |
+| --- | --- |
+| 本地开发机 | 编码、策略调试、回测、Dry-Run、Git 提交 |
+| GitHub | 远程仓库、版本记录、代码同步和回滚依据 |
+| 阿里云服务器 | 拉取代码、维护运行环境、启动 Freqtrade、保存运行数据和日志 |
+
+该架构将“开发”和“运行”分离，便于追踪每次变更、快速回滚和持续部署，同时避免直接在生产服务器上改代码造成版本漂移。
+
 ## Disclaimer
 
 This software is for educational purposes only. Do not risk money which
@@ -165,11 +206,11 @@ Telegram is not mandatory. However, this is a great way to control your bot. Mor
 
 ## Development branches
 
-The project is currently setup in two main branches:
+For this deployment project, `stable` is the primary development and deployment branch:
 
-- `develop` - This branch has often new features, but might also contain breaking changes. We try hard to keep this branch as stable as possible.
-- `stable` - This branch contains the latest stable release. This branch is generally well tested.
-- `feat/*` - These are feature branches, which are being worked on heavily. Please don't use these unless you want to test a specific feature.
+- `stable` - Main branch for local development, GitHub synchronization and Alibaba Cloud deployment.
+- `develop` - Reserved for upstream synchronization or comparison and is not used as the production deployment source.
+- `feat/*` - Optional short-lived branches for isolated experiments or larger changes before merging into `stable`.
 
 ## Support
 
@@ -212,7 +253,7 @@ Issues labeled [good first issue](https://github.com/freqtrade/freqtrade/labels/
 
 **Note** before starting any major new feature work, *please open an issue describing what you are planning to do* or talk to us on [discord](https://discord.gg/p7nuUNVfP7) (please use the #dev channel for this). This will ensure that interested parties can give valuable feedback on the feature, and let others know that you are working on it.
 
-**Important:** Always create your PR against the `develop` branch, not `stable`.
+**Important:** For this repository, changes intended for deployment should be merged into `stable`.
 
 ## Requirements
 
